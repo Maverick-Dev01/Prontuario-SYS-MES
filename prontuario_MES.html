@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prontuario — Sistema MES de Trazabilidad Industrial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0e0c;
+    --paper:#f4f1ea;
+    --paper-2:#ebe6d9;
+    --rust:#b04a2f;
+    --rust-dark:#7a2f1c;
+    --moss:#4a5d3a;
+    --steel:#3b4452;
+    --amber:#d4a23a;
+    --line:#1a1f1c;
+    --mute:#6b6357;
+    --ok:#3a6b4a;
+    --warn:#c4742a;
+    --err:#a83227;
+    --display:'Fraunces', Georgia, serif;
+    --body:'Manrope', system-ui, sans-serif;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--body);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    font-size:15.5px;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+    background-image:radial-gradient(rgba(10,14,12,0.035) 1px,transparent 1px);
+    background-size:3px 3px;
+  }
+  ::selection{background:var(--rust);color:var(--paper)}
+
+  /* ============ LAYOUT ============ */
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;position:relative;z-index:2}
+  @media(max-width:980px){.shell{grid-template-columns:1fr}}
+
+  /* ============ SIDEBAR ============ */
+  aside{
+    background:var(--ink);color:var(--paper);
+    padding:32px 24px;position:sticky;top:0;height:100vh;overflow-y:auto;
+    border-right:1px solid var(--line);
+  }
+  @media(max-width:980px){aside{position:relative;height:auto}}
+  aside .brand{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+  aside .brand .mark{
+    font-family:var(--mono);font-size:11px;letter-spacing:2px;
+    color:var(--amber);text-transform:uppercase;
+  }
+  aside h1{
+    font-family:var(--display);font-weight:600;font-size:28px;line-height:1;
+    color:var(--paper);margin-bottom:4px;letter-spacing:-0.02em;
+  }
+  aside h1 em{font-style:italic;color:var(--amber);font-weight:400}
+  aside .sub{font-family:var(--mono);font-size:10px;color:#9a9388;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:36px}
+  aside nav{display:flex;flex-direction:column;gap:2px}
+  aside nav a{
+    color:#bdb5a3;text-decoration:none;font-size:13px;padding:8px 12px;
+    border-left:2px solid transparent;display:flex;justify-content:space-between;
+    transition:all 0.18s;font-weight:500;
+  }
+  aside nav a span.num{font-family:var(--mono);font-size:10px;color:#6b6357;opacity:0.7}
+  aside nav a:hover{color:var(--paper);border-left-color:var(--rust);background:rgba(255,255,255,0.02)}
+  aside nav .group{font-family:var(--mono);font-size:10px;color:#6b6357;letter-spacing:2px;text-transform:uppercase;margin:22px 12px 8px}
+  aside .foot{position:absolute;bottom:24px;left:24px;right:24px;font-family:var(--mono);font-size:10px;color:#6b6357;border-top:1px solid #2a2f2c;padding-top:14px}
+
+  /* ============ MAIN ============ */
+  main{padding:0;max-width:none}
+  section{padding:80px 72px;border-bottom:1px solid rgba(10,14,12,0.08);max-width:1100px}
+  @media(max-width:720px){section{padding:56px 28px}}
+  section + section{position:relative}
+
+  /* ============ HERO ============ */
+  .hero{padding-top:96px;padding-bottom:96px;position:relative}
+  .hero .doc-meta{display:flex;gap:32px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--mute);text-transform:uppercase;margin-bottom:32px}
+  .hero .doc-meta span strong{color:var(--ink);display:block;font-weight:700;font-size:11px;margin-top:2px}
+  .hero h2{
+    font-family:var(--display);font-weight:400;font-size:clamp(48px,7vw,84px);
+    line-height:0.96;letter-spacing:-0.035em;margin-bottom:24px;
+  }
+  .hero h2 em{font-style:italic;color:var(--rust);font-weight:600}
+  .hero h2 .small{display:block;font-size:0.45em;color:var(--mute);font-weight:400;letter-spacing:-0.01em;margin-top:8px;font-style:normal}
+  .hero .lede{font-size:19px;max-width:680px;color:var(--steel);line-height:1.5;margin-bottom:40px}
+  .hero .lede em{font-style:italic;color:var(--rust-dark)}
+
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+  .pill{
+    font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    padding:6px 12px;border:1px solid var(--ink);border-radius:999px;
+    background:transparent;color:var(--ink);
+  }
+  .pill.solid{background:var(--ink);color:var(--paper)}
+  .pill.rust{background:var(--rust);color:var(--paper);border-color:var(--rust)}
+
+  /* ============ TYPOGRAPHY ============ */
+  h3.section-title{
+    font-family:var(--mono);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--rust);margin-bottom:14px;display:flex;align-items:center;gap:12px;
+  }
+  h3.section-title::before{
+    content:'';width:32px;height:1px;background:var(--rust);
+  }
+  h4.section-h{
+    font-family:var(--display);font-weight:500;font-size:clamp(32px,4vw,46px);
+    line-height:1.05;letter-spacing:-0.025em;margin-bottom:32px;max-width:780px;
+  }
+  h4.section-h em{font-style:italic;color:var(--rust);font-weight:600}
+  h5{font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-0.015em;margin:32px 0 12px}
+  h6{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--rust-dark);margin:24px 0 10px;font-weight:700}
+  p{margin-bottom:14px;max-width:760px}
+  p strong{color:var(--ink);font-weight:700}
+  p em{color:var(--rust-dark);font-style:italic}
+  ul,ol{margin:12px 0 18px 0;padding-left:0;list-style:none;max-width:780px}
+  ul li,ol li{padding:6px 0 6px 22px;position:relative;border-bottom:1px dashed rgba(10,14,12,0.08)}
+  ul li::before{content:'▸';position:absolute;left:0;color:var(--rust);font-size:11px;top:9px}
+  ol{counter-reset:ol}
+  ol li{counter-increment:ol}
+  ol li::before{content:counter(ol,decimal-leading-zero);position:absolute;left:0;font-family:var(--mono);font-size:10px;color:var(--rust);top:8px;font-weight:700}
+  code{font-family:var(--mono);font-size:0.88em;background:var(--paper-2);padding:1px 6px;border-radius:3px;color:var(--rust-dark)}
+
+  /* ============ CARDS / GRIDS ============ */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:24px 0}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:24px 0}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0}
+  @media(max-width:780px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--paper-2);padding:24px;border-radius:2px;
+    border:1px solid rgba(10,14,12,0.08);position:relative;
+  }
+  .card .tag{
+    font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--mute);margin-bottom:8px;display:block;
+  }
+  .card h6{margin-top:0}
+  .card-strong{background:var(--ink);color:var(--paper)}
+  .card-strong .tag,.card-strong h6{color:var(--amber)}
+  .card-strong p{color:#d4cdb8}
+
+  /* ============ TABLE ============ */
+  .tbl{width:100%;border-collapse:collapse;margin:20px 0;font-size:14px}
+  .tbl th{
+    text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--mute);padding:10px 14px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  .tbl td{padding:12px 14px;border-bottom:1px dashed rgba(10,14,12,0.1);vertical-align:top}
+  .tbl tr:hover td{background:rgba(176,74,47,0.04)}
+  .tbl code{font-size:12px}
+
+  /* ============ ARCH DIAGRAM ============ */
+  .arch{
+    background:var(--ink);color:var(--paper);padding:48px 32px;border-radius:2px;
+    margin:32px 0;font-family:var(--mono);font-size:12px;overflow-x:auto;
+  }
+  .arch .layer{
+    border:1px solid #3a4541;padding:16px;margin-bottom:8px;border-radius:2px;
+    position:relative;
+  }
+  .arch .layer-label{
+    position:absolute;top:-9px;left:14px;background:var(--ink);padding:0 8px;
+    font-size:9px;letter-spacing:2px;color:var(--amber);
+  }
+  .arch .layer-body{display:flex;gap:8px;flex-wrap:wrap}
+  .arch .node{
+    background:#1f2622;padding:8px 12px;border:1px solid #3a4541;border-radius:2px;
+    flex:1;min-width:140px;
+  }
+  .arch .node strong{color:var(--paper);display:block;margin-bottom:2px;font-size:11px}
+  .arch .node span{color:#8a8478;font-size:10px}
+  .arch .flow{text-align:center;color:var(--rust);font-size:18px;padding:4px}
+
+  /* ============ CALLOUTS ============ */
+  .callout{
+    border-left:3px solid var(--rust);padding:18px 22px;margin:24px 0;
+    background:rgba(176,74,47,0.04);max-width:820px;
+  }
+  .callout .tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:6px;display:block}
+  .callout p{margin-bottom:0}
+
+  /* ============ PHASE TIMELINE ============ */
+  .phases{display:flex;gap:0;margin:32px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  @media(max-width:780px){.phases{flex-direction:column}}
+  .phase{
+    flex:1;padding:24px 20px;border-right:1px dashed rgba(10,14,12,0.15);position:relative;
+  }
+  .phase:last-child{border-right:0}
+  .phase .ph-num{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--rust);margin-bottom:8px}
+  .phase .ph-name{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-0.01em;margin-bottom:10px;line-height:1.1}
+  .phase .ph-dur{font-family:var(--mono);font-size:10px;color:var(--mute);margin-bottom:12px}
+  .phase ul{font-size:12px;margin:0}
+  .phase ul li{padding:3px 0 3px 16px;border-bottom:0;font-size:12px}
+  .phase ul li::before{font-size:9px;top:7px}
+
+  /* ============ ISA-95 PYRAMID ============ */
+  .pyramid{margin:32px 0;max-width:680px}
+  .pyramid .level{
+    padding:18px 24px;color:var(--paper);font-family:var(--mono);font-size:12px;
+    margin:2px auto;display:flex;justify-content:space-between;align-items:center;
+  }
+  .pyramid .lvl-4{background:#1f2622;width:60%}
+  .pyramid .lvl-3{background:var(--rust);width:75%;position:relative}
+  .pyramid .lvl-3::after{
+    content:'TÚ ESTÁS AQUÍ';position:absolute;right:-110px;top:50%;transform:translateY(-50%);
+    color:var(--rust);font-size:10px;letter-spacing:2px;font-weight:700;
+  }
+  .pyramid .lvl-2{background:var(--rust-dark);width:75%}
+  .pyramid .lvl-2{background:var(--steel);width:85%}
+  .pyramid .lvl-1{background:#5b6470;width:92%}
+  .pyramid .lvl-0{background:#7a8290;width:100%;color:var(--paper)}
+  .pyramid .level strong{font-weight:700;letter-spacing:1.5px}
+  .pyramid .level span{font-size:10px;opacity:0.8}
+
+  /* ============ STACK GRID ============ */
+  .stack-row{
+    display:grid;grid-template-columns:140px 1fr;gap:24px;
+    padding:18px 0;border-bottom:1px dashed rgba(10,14,12,0.1);
+  }
+  .stack-row .stk-cat{
+    font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--rust);padding-top:2px;
+  }
+  .stack-row .stk-body strong{font-family:var(--display);font-size:18px;font-weight:600;display:block;margin-bottom:4px;letter-spacing:-0.01em}
+  .stack-row .stk-body em{color:var(--mute);font-style:normal;font-size:12px;font-family:var(--mono)}
+  .stack-row .stk-body p{font-size:13.5px;margin-top:6px;color:var(--steel)}
+
+  /* ============ NUMS ============ */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:32px 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  @media(max-width:780px){.stat-row{grid-template-columns:1fr 1fr}}
+  .stat{padding:20px;border-right:1px dashed rgba(10,14,12,0.15)}
+  .stat:last-child{border-right:0}
+  .stat .num{font-family:var(--display);font-size:42px;font-weight:600;line-height:1;letter-spacing:-0.03em;color:var(--rust);margin-bottom:4px}
+  .stat .lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mute)}
+
+  /* ============ FOOTER ============ */
+  footer{padding:60px 72px;background:var(--ink);color:#9a9388;font-family:var(--mono);font-size:11px;letter-spacing:0.5px}
+  footer strong{color:var(--amber);display:block;letter-spacing:2px;font-size:10px;margin-bottom:8px;font-weight:700}
+  footer a{color:var(--paper);text-decoration:none;border-bottom:1px dotted #6b6357}
+
+  /* === MODULE BADGE === */
+  .mod-badge{
+    display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+    padding:3px 8px;border-radius:2px;margin-left:8px;text-transform:uppercase;font-weight:700;
+  }
+  .mod-mvp{background:var(--rust);color:var(--paper)}
+  .mod-p2{background:var(--steel);color:var(--paper)}
+  .mod-p3{background:var(--amber);color:var(--ink)}
+
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside>
+    <div class="brand"><span class="mark">DOC.001</span></div>
+    <h1>Prontuario <em>MES</em></h1>
+    <div class="sub">v1.0 · Sistema Piloto</div>
+
+    <nav>
+      <div class="group">Visión</div>
+      <a href="#resumen"><span>Resumen ejecutivo</span><span class="num">01</span></a>
+      <a href="#contexto"><span>Contexto y problema</span><span class="num">02</span></a>
+      <a href="#glosario"><span>Glosario & ISA-95</span><span class="num">03</span></a>
+
+      <div class="group">Especificación</div>
+      <a href="#req-func"><span>Req. funcionales</span><span class="num">04</span></a>
+      <a href="#req-nofunc"><span>Req. no funcionales</span><span class="num">05</span></a>
+      <a href="#modulos"><span>Módulos del sistema</span><span class="num">06</span></a>
+
+      <div class="group">Diseño técnico</div>
+      <a href="#arquitectura"><span>Arquitectura</span><span class="num">07</span></a>
+      <a href="#stack"><span>Stack tecnológico</span><span class="num">08</span></a>
+      <a href="#datos"><span>Modelo de datos</span><span class="num">09</span></a>
+      <a href="#apis"><span>APIs y mensajería</span><span class="num">10</span></a>
+      <a href="#seguridad"><span>Seguridad</span><span class="num">11</span></a>
+
+      <div class="group">Ejecución</div>
+      <a href="#simulacion"><span>Plan de simulación</span><span class="num">12</span></a>
+      <a href="#roadmap"><span>Roadmap por fases</span><span class="num">13</span></a>
+      <a href="#hardware"><span>Hardware & costos</span><span class="num">14</span></a>
+      <a href="#riesgos"><span>Riesgos</span><span class="num">15</span></a>
+      <a href="#aceptacion"><span>Aceptación del piloto</span><span class="num">16</span></a>
+    </nav>
+
+    <div class="foot">
+      DOC.MES.001 · 2026<br>
+      Documento interno
+    </div>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main>
+
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="doc-meta">
+        <span>Documento<strong>Prontuario técnico</strong></span>
+        <span>Tipo<strong>MES + IIoT + SCADA-lite</strong></span>
+        <span>Estado<strong>Piloto en planta</strong></span>
+        <span>Versión<strong>1.0 · Mayo 2026</strong></span>
+      </div>
+      <h2>Trazabilidad <em>industrial</em>,<br>de la máquina a la nube.<span class="small">Un sistema MES propio, multi-protocolo, offline-first, escalable a planta completa.</span></h2>
+      <p class="lede">Este documento define un <em>sistema piloto de ejecución de manufactura (MES)</em> para líneas de producción: ingesta de telemetría desde PLCs en tiempo real, persistencia time-series en la nube, configuración remota de setpoints, visualización para operadores en planta y trazabilidad completa de lotes y eventos.</p>
+
+      <div class="pills">
+        <span class="pill rust">Multi-protocolo</span>
+        <span class="pill">OPC UA · Modbus · S7 · Ethernet/IP</span>
+        <span class="pill">MQTT + Sparkplug B</span>
+        <span class="pill">Edge-Fog-Cloud</span>
+        <span class="pill solid">Mobile-first para piso</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="num">04</div><div class="lbl">Fases de despliegue</div></div>
+        <div class="stat"><div class="num">12+</div><div class="lbl">Módulos funcionales</div></div>
+        <div class="stat"><div class="num">3</div><div class="lbl">Capas (Edge·Fog·Cloud)</div></div>
+        <div class="stat"><div class="num">99.5%</div><div class="lbl">Uptime objetivo</div></div>
+      </div>
+    </section>
+
+    <!-- ============== 01 RESUMEN ============== -->
+    <section id="resumen">
+      <h3 class="section-title">01 — Resumen ejecutivo</h3>
+      <h4 class="section-h">Un MES propio, construido por <em>capas independientes</em> que sobreviven a fallos de red.</h4>
+
+      <p>El sistema captura datos de sensores conectados a PLCs en una línea de producción, los envía a la nube mediante un gateway industrial, los persiste en una base time-series y los expone a operadores y supervisores a través de una aplicación web y móvil. La aplicación también permite escribir <strong>setpoints</strong> de regreso al PLC para reconfigurar parámetros de operación.</p>
+
+      <p>Se diferencia de soluciones comerciales (Ignition, Wonderware, AVEVA) en que es <em>propio, auditable, modular y de costo controlado</em>, sacrificando madurez por flexibilidad y propiedad del código. El piloto demuestra el flujo extremo a extremo en una línea, y la arquitectura permite escalar a planta completa sin reescritura.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag">Objetivo de negocio</span>
+          <h6>Visibilidad en tiempo real</h6>
+          <p>Reducir tiempo entre falla y detección de minutos a segundos. Datos del piso disponibles para supervisión inmediata.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Objetivo técnico</span>
+          <h6>Arquitectura agnóstica</h6>
+          <p>Un solo backend que soporta cualquier PLC vía OPC UA. Cambiar de marca de PLC no debe romper nada río arriba.</p>
+        </div>
+        <div class="card card-strong">
+          <span class="tag">Diferenciador</span>
+          <h6>Offline-first</h6>
+          <p>Si cae internet, el edge sigue capturando, sigue cobrando, sigue mostrando. Se sincroniza al volver.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== 02 CONTEXTO ============== -->
+    <section id="contexto">
+      <h3 class="section-title">02 — Contexto y problema</h3>
+      <h4 class="section-h">El piso de planta opera <em>a ciegas</em> cuando los datos viven en los PLCs.</h4>
+
+      <h6>Situación típica que resuelve</h6>
+      <p>En una línea de producción promedio, los PLCs registran cientos de variables por minuto — velocidad de motor, temperatura, presión, conteo, sensores de presencia, etiquetas RFID. Esa información es local: el operador la ve en la HMI del PLC, pero supervisión, mantenimiento y calidad no la ven hasta que alguien la pide o falla algo. La trazabilidad de lotes se hace en papel o en hojas de cálculo separadas.</p>
+
+      <h6>Lo que se quiere construir</h6>
+      <ul>
+        <li>Una capa única que <strong>lea cualquier PLC</strong> (Siemens, Allen-Bradley, Modbus, OPC UA) y unifique la telemetría.</li>
+        <li>Persistencia histórica que aguante <strong>millones de muestras por día por línea</strong> sin colapsar.</li>
+        <li>Una <strong>aplicación móvil y de escritorio</strong> que muestre la línea en vivo, con setpoints editables.</li>
+        <li>Trazabilidad por lote/orden de producción con <strong>genealogía completa</strong> de materia prima a producto.</li>
+        <li>Independencia de la nube: si se cae internet, la planta sigue operando y <strong>los datos no se pierden</strong>.</li>
+      </ul>
+
+      <h6>Lo que NO es este sistema</h6>
+      <p>No es un ERP (no maneja contabilidad ni compras). No es un sistema de control (el PLC sigue controlando — nosotros leemos y sugerimos setpoints, no reemplazamos el lazo de control). No es un sistema certificado para industrias farmacéuticas o aeroespaciales en su V1; eso requiere validación adicional (21 CFR Part 11, IEC 62443).</p>
+    </section>
+
+    <!-- ============== 03 GLOSARIO ============== -->
+    <section id="glosario">
+      <h3 class="section-title">03 — Glosario y nivel ISA-95</h3>
+      <h4 class="section-h">Dónde encaja este sistema en la <em>pirámide de automatización</em>.</h4>
+
+      <p>La norma <strong>ISA-95</strong> es el estándar de la industria para describir capas en sistemas de manufactura. Nuestro sistema vive en el <strong>nivel 3</strong> (MES) e interactúa con el nivel 2 (SCADA/HMI) hacia abajo y con el nivel 4 (ERP) hacia arriba.</p>
+
+      <div class="pyramid">
+        <div class="level lvl-4"><strong>NIVEL 4 — ERP</strong><span>Planeación corporativa · días/semanas</span></div>
+        <div class="level lvl-3"><strong>NIVEL 3 — MES</strong><span>Ejecución de manufactura · horas/turnos</span></div>
+        <div class="level lvl-2"><strong>NIVEL 2 — SCADA / HMI</strong><span>Supervisión · segundos/minutos</span></div>
+        <div class="level lvl-1"><strong>NIVEL 1 — PLC / Control</strong><span>Control de lazo · milisegundos</span></div>
+        <div class="level lvl-0"><strong>NIVEL 0 — SENSORES / ACTUADORES</strong><span>Proceso físico</span></div>
+      </div>
+
+      <h6>Términos clave del documento</h6>
+      <table class="tbl">
+        <tr><th>Término</th><th>Definición operativa</th></tr>
+        <tr><td><code>PLC</code></td><td>Programmable Logic Controller — controlador industrial que lee sensores y comanda actuadores.</td></tr>
+        <tr><td><code>OPC UA</code></td><td>Protocolo industrial moderno, agnóstico de fabricante, basado en TCP/IP con seguridad nativa.</td></tr>
+        <tr><td><code>Edge Gateway</code></td><td>Computadora industrial en planta que lee PLCs y publica al broker MQTT. Buffer local cuando hay corte de red.</td></tr>
+        <tr><td><code>MQTT</code></td><td>Bus de mensajería pub/sub estándar en IIoT. Eficiente en ancho de banda, ideal para muchos sensores.</td></tr>
+        <tr><td><code>Sparkplug B</code></td><td>Especificación encima de MQTT que define modelo de datos, gestión de estado y birth/death messages.</td></tr>
+        <tr><td><code>Setpoint</code></td><td>Valor objetivo que un operador establece para un parámetro de proceso (ej. temperatura objetivo).</td></tr>
+        <tr><td><code>OEE</code></td><td>Overall Equipment Effectiveness — KPI estándar (Disponibilidad × Rendimiento × Calidad).</td></tr>
+        <tr><td><code>Time-series DB</code></td><td>Base de datos optimizada para datos con timestamp — escrituras masivas, agregaciones por ventana.</td></tr>
+        <tr><td><code>Genealogía</code></td><td>Trazabilidad bidireccional: dado un lote final, qué materia prima lo formó; dada materia prima, qué lotes salieron.</td></tr>
+      </table>
+    </section>
+
+    <!-- ============== 04 REQ FUNCIONALES ============== -->
+    <section id="req-func">
+      <h3 class="section-title">04 — Requerimientos funcionales</h3>
+      <h4 class="section-h">Qué <em>hace</em> el sistema, agrupado por capacidad.</h4>
+
+      <h6>RF-01 · Ingesta de telemetría</h6>
+      <ul>
+        <li>Leer variables de PLCs vía <strong>OPC UA, Modbus TCP, Siemens S7, EtherNet/IP</strong>.</li>
+        <li>Frecuencia de muestreo configurable por variable (100 ms a 60 s).</li>
+        <li>Buffer local en gateway con persistencia (SQLite/RocksDB) que aguante mínimo 72h sin red.</li>
+        <li>Publicar al broker MQTT usando topics jerárquicos <code>planta/linea/equipo/variable</code>.</li>
+      </ul>
+
+      <h6>RF-02 · Escritura de setpoints</h6>
+      <ul>
+        <li>Comando bidireccional desde la app → backend → MQTT → gateway → PLC.</li>
+        <li>Confirmación de lectura de regreso (acuse).</li>
+        <li>Auditoría obligatoria: quién, cuándo, valor anterior, valor nuevo.</li>
+        <li>Rangos válidos por variable; rechazo si fuera de rango con razón.</li>
+      </ul>
+
+      <h6>RF-03 · Visualización en tiempo real</h6>
+      <ul>
+        <li>Dashboards configurables por línea, equipo, turno, operador.</li>
+        <li>Gráficos de tendencia, gauges, semáforos, mapa visual de planta (digital twin liviano).</li>
+        <li>Latencia objetivo &lt; 2s desde sensor hasta UI bajo condiciones normales.</li>
+        <li>Vista móvil/tablet optimizada para operadores en piso (lectura desde 1m, guantes, luz industrial).</li>
+      </ul>
+
+      <h6>RF-04 · Alertas y eventos</h6>
+      <ul>
+        <li>Reglas configurables por variable: rangos, derivadas, ventanas móviles.</li>
+        <li>Niveles: INFO · WARN · CRITICAL · EMERGENCY.</li>
+        <li>Canales: in-app, push móvil, email, webhook (Slack/Teams), SMS (opcional).</li>
+        <li>Escalamiento automático si no se atiende en X minutos.</li>
+        <li>Andon digital: el operador llama desde tablet — supervisor recibe push.</li>
+      </ul>
+
+      <h6>RF-05 · Trazabilidad y genealogía</h6>
+      <ul>
+        <li>Cada lote producido se asocia a: orden de producción, materia prima consumida, máquinas, operadores, parámetros, eventos.</li>
+        <li>Búsqueda forward: dado un lote MP, dame todos los lotes finales que lo incluyeron.</li>
+        <li>Búsqueda backward: dado un lote final, dame el árbol completo de MP, máquinas y eventos.</li>
+        <li>Exportación a PDF firmado para auditorías.</li>
+      </ul>
+
+      <h6>RF-06 · KPIs y OEE</h6>
+      <ul>
+        <li>Cálculo en línea de Disponibilidad, Rendimiento, Calidad, OEE.</li>
+        <li>Comparativos por turno, día, semana, mes, línea, operador.</li>
+        <li>Causa raíz de paros (registrada por operador o automática con catálogo de códigos).</li>
+      </ul>
+
+      <h6>RF-07 · Reportes históricos</h6>
+      <ul>
+        <li>Consultas ad-hoc sobre rangos temporales (día, semana, mes, año).</li>
+        <li>Exportación: CSV, Excel, PDF.</li>
+        <li>Reportes programados (envío diario por email).</li>
+      </ul>
+
+      <h6>RF-08 · Gestión de usuarios y roles</h6>
+      <ul>
+        <li>Roles: <code>Operador · Supervisor · Mantenimiento · Calidad · Admin · Solo lectura</code>.</li>
+        <li>Permisos granulares por módulo y por línea (un supervisor puede ver solo su área).</li>
+        <li>SSO opcional (SAML/OIDC) para integrar con AD corporativo.</li>
+      </ul>
+
+      <h6>RF-09 · Configuración del sistema</h6>
+      <ul>
+        <li>CRUD de plantas, líneas, equipos, variables, sensores.</li>
+        <li>Mapeo lógico: nombre humano ↔ dirección de PLC.</li>
+        <li>Versionado de cambios de configuración (qué cambió, quién, cuándo).</li>
+      </ul>
+    </section>
+
+    <!-- ============== 05 REQ NO FUNCIONALES ============== -->
+    <section id="req-nofunc">
+      <h3 class="section-title">05 — Requerimientos no funcionales</h3>
+      <h4 class="section-h">Cómo se <em>comporta</em> el sistema bajo carga y bajo fallo.</h4>
+
+      <table class="tbl">
+        <tr><th>Atributo</th><th>Métrica objetivo</th><th>Mecanismo</th></tr>
+        <tr><td><strong>Escalabilidad</strong></td><td>Hasta 50 líneas, 5,000 variables, 10M muestras/día</td><td>TimescaleDB con hypertables, compresión, partición por tiempo</td></tr>
+        <tr><td><strong>Resiliencia offline</strong></td><td>≥ 72h sin red sin pérdida de datos</td><td>Buffer local en gateway (SQLite + WAL)</td></tr>
+        <tr><td><strong>Latencia tiempo real</strong></td><td>p95 &lt; 2s sensor→UI</td><td>MQTT QoS 1 + WebSocket / SSE al frontend</td></tr>
+        <tr><td><strong>Disponibilidad</strong></td><td>99.5% (≈ 3.6h down/mes)</td><td>Réplicas de backend + RDS multi-AZ + broker en cluster</td></tr>
+        <tr><td><strong>Seguridad red</strong></td><td>Segmentación OT/IT, sin acceso directo a PLC</td><td>VLAN dedicada, gateway como único punto de contacto</td></tr>
+        <tr><td><strong>Cifrado</strong></td><td>TLS 1.3 en tránsito · AES-256 en reposo</td><td>Certificados X.509, broker MQTTS, RDS encryption</td></tr>
+        <tr><td><strong>Auditoría</strong></td><td>100% de escrituras (setpoints, config) registradas</td><td>Append-only log en tabla separada con hash encadenado</td></tr>
+        <tr><td><strong>Tiempo de despliegue</strong></td><td>&lt; 30 min añadir una línea nueva</td><td>Plantillas de configuración + UI de provisioning</td></tr>
+        <tr><td><strong>Compatibilidad</strong></td><td>Chrome/Edge/Firefox ≥ 2 versiones, iOS 15+, Android 10+</td><td>Next.js con polyfills, PWA instalable</td></tr>
+        <tr><td><strong>Internacionalización</strong></td><td>Español MX + Inglés en V1</td><td>i18n estándar, claves por módulo</td></tr>
+        <tr><td><strong>Accesibilidad</strong></td><td>WCAG 2.1 AA en pantallas operativas</td><td>Contraste ≥ 4.5:1, navegación por teclado, ARIA</td></tr>
+      </table>
+
+      <div class="callout">
+        <span class="tag">Decisión clave</span>
+        <p>Sus prioridades fueron <strong>Escalabilidad → Offline-first → Tiempo real → Bajo costo</strong>. Esto implica aceptar latencia de 1-2s en UI a cambio de durabilidad de datos y costo bajo de almacenamiento. Si llegara a requerirse latencia &lt; 200ms (control en lazo cerrado), eso vive en el PLC, no en este sistema.</p>
+      </div>
+    </section>
+
+    <!-- ============== 06 MÓDULOS ============== -->
+    <section id="modulos">
+      <h3 class="section-title">06 — Módulos del sistema</h3>
+      <h4 class="section-h">Trece módulos organizados en <em>tres oleadas</em> de implementación.</h4>
+
+      <p>El sistema es modular. El piloto inicial debe entregar los módulos marcados como <span class="mod-badge mod-mvp">MVP</span>. Los módulos de fase 2 <span class="mod-badge mod-p2">F2</span> y fase 3 <span class="mod-badge mod-p3">F3</span> se construyen sobre la misma base sin reescribir.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <span class="tag">M-01 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Dashboards en tiempo real</h6>
+          <p>Vistas configurables con widgets de tendencia, gauges, semáforos. Por línea, equipo, turno. Vista para piso (móvil) y vista para sala de control (desktop).</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-02 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Configuración de setpoints</h6>
+          <p>UI para editar parámetros del PLC con validación de rangos, confirmación, auditoría. Soporte para 4-eyes (doble aprobación) en variables críticas.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-03 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Alertas y eventos</h6>
+          <p>Motor de reglas, niveles de severidad, multi-canal. Andon digital integrado. Bandeja de eventos con filtros y acknowledgement.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-04 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Trazabilidad de lotes</h6>
+          <p>Asociar producción con orden, materia prima, máquinas, operadores, parámetros. Genealogía bidireccional.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-05 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>OEE y KPIs</h6>
+          <p>Cálculo continuo de Disponibilidad, Rendimiento, Calidad, OEE. Comparativos por dimensión y registro de causas de paro.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-06 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Usuarios y roles (RBAC)</h6>
+          <p>Gestión de usuarios, asignación de roles, permisos por línea/área. Sesiones, MFA opcional, audit log de accesos.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-07 <span class="mod-badge mod-mvp">MVP</span></span>
+          <h6>Reportes históricos</h6>
+          <p>Consultas sobre rangos temporales, exportación CSV/Excel/PDF, reportes programados por email.</p>
+        </div>
+
+        <div class="card">
+          <span class="tag">M-08 <span class="mod-badge mod-p2">F2</span></span>
+          <h6>Órdenes de producción</h6>
+          <p>Lista de trabajo por línea. Asignación de operadores. Importación desde ERP o creación manual. Inicio/pausa/cierre con consumos.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-09 <span class="mod-badge mod-p2">F2</span></span>
+          <h6>Mantenimiento preventivo</h6>
+          <p>Plan de mantenimientos por horas de operación, ciclos, tiempo calendario. Generación automática de OT. Catálogo de fallas.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-10 <span class="mod-badge mod-p2">F2</span></span>
+          <h6>Control estadístico de proceso (SPC)</h6>
+          <p>Gráficos X-bar, R, p, c. Reglas de Western Electric para detección anómala. Capacidad de proceso (Cp, Cpk).</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-11 <span class="mod-badge mod-p2">F2</span></span>
+          <h6>Genealogía visual</h6>
+          <p>Vista de árbol/grafo de la genealogía. Materia prima ↔ lotes intermedios ↔ producto final. Útil para recall.</p>
+        </div>
+
+        <div class="card">
+          <span class="tag">M-12 <span class="mod-badge mod-p3">F3</span></span>
+          <h6>Mantenimiento predictivo</h6>
+          <p>Modelo ML sobre la time-series para predecir fallas. Empieza con detección de anomalías (isolation forest, autoencoders) y evoluciona a remaining useful life.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-13 <span class="mod-badge mod-p3">F3</span></span>
+          <h6>Energy monitoring</h6>
+          <p>Consumo eléctrico por línea/máquina, costo por unidad producida, identificación de equipos ineficientes. ROI corto.</p>
+        </div>
+        <div class="card">
+          <span class="tag">M-14 <span class="mod-badge mod-p3">F3</span></span>
+          <h6>Integración ERP</h6>
+          <p>Conector bidireccional con SAP / Odoo / Dynamics: órdenes hacia abajo, consumos y producción hacia arriba.</p>
+        </div>
+        <div class="card card-strong">
+          <span class="tag">M-15 <span class="mod-badge mod-p3">F3</span></span>
+          <h6>Digital Twin de planta</h6>
+          <p>Mapa interactivo 2D/3D de la planta con estado de equipos en vivo. Click sobre máquina → drill-down a sus variables. La cara pública del sistema.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== 07 ARQUITECTURA ============== -->
+    <section id="arquitectura">
+      <h3 class="section-title">07 — Arquitectura</h3>
+      <h4 class="section-h">Tres capas físicas, un solo bus de mensajería: <em>Edge → Fog → Cloud</em>.</h4>
+
+      <p>La arquitectura sigue el patrón estándar de IIoT moderno. Cada capa tiene una responsabilidad clara y puede operar de forma autónoma si las superiores fallan. El bus que las une es MQTT con Sparkplug B.</p>
+
+      <div class="arch">
+        <div class="layer">
+          <div class="layer-label">CLOUD</div>
+          <div class="layer-body">
+            <div class="node"><strong>API Gateway</strong><span>NestJS / NGINX</span></div>
+            <div class="node"><strong>Backend MES</strong><span>NestJS — REST + WS</span></div>
+            <div class="node"><strong>TimescaleDB</strong><span>Telemetría histórica</span></div>
+            <div class="node"><strong>PostgreSQL</strong><span>Config + auditoría</span></div>
+            <div class="node"><strong>Redis</strong><span>Cache + pubsub UI</span></div>
+            <div class="node"><strong>Frontend</strong><span>Next.js + PWA</span></div>
+            <div class="node"><strong>Keycloak</strong><span>Auth + RBAC + SSO</span></div>
+          </div>
+        </div>
+        <div class="flow">▲ MQTT/TLS  ·  REST/WSS  ▼</div>
+        <div class="layer">
+          <div class="layer-label">FOG (Servidor en planta — opcional)</div>
+          <div class="layer-body">
+            <div class="node"><strong>Broker MQTT central</strong><span>EMQX o HiveMQ</span></div>
+            <div class="node"><strong>Time-series local</strong><span>TimescaleDB réplica</span></div>
+            <div class="node"><strong>Cache de UI local</strong><span>Vista en planta sin internet</span></div>
+          </div>
+        </div>
+        <div class="flow">▲ MQTT (LAN)  ▼</div>
+        <div class="layer">
+          <div class="layer-label">EDGE (Gateway en cada línea)</div>
+          <div class="layer-body">
+            <div class="node"><strong>Gateway industrial</strong><span>Revolution Pi / IOT2050</span></div>
+            <div class="node"><strong>Conector OPC UA</strong><span>Apache PLC4X / Ignition Edge</span></div>
+            <div class="node"><strong>Node-RED</strong><span>Transformación + reglas</span></div>
+            <div class="node"><strong>Buffer local</strong><span>SQLite (offline)</span></div>
+            <div class="node"><strong>MQTT publisher</strong><span>Sparkplug B</span></div>
+          </div>
+        </div>
+        <div class="flow">▲ OPC UA / Modbus / S7 / EtherNet/IP  ▼</div>
+        <div class="layer">
+          <div class="layer-label">PLANTA — NIVEL 1/0</div>
+          <div class="layer-body">
+            <div class="node"><strong>PLCs</strong><span>Siemens · Allen-Bradley · etc.</span></div>
+            <div class="node"><strong>Sensores</strong><span>Temperatura · presión · RFID · ópticos</span></div>
+            <div class="node"><strong>Actuadores</strong><span>Variadores · válvulas · motores</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h6>Por qué tres capas y no dos</h6>
+      <p>La capa <strong>Fog</strong> (un servidor en la planta) es opcional pero recomendada para plantas medianas y grandes. Aporta tres beneficios: (1) el operador en piso sigue viendo dashboards aunque internet falle; (2) reduce ancho de banda al WAN; (3) latencia baja para alertas locales. Para una planta chica o un piloto inicial, puede omitirse y el gateway publica directo a cloud.</p>
+
+      <h6>Por qué MQTT + Sparkplug B y no REST puro</h6>
+      <p>REST es pull (cliente pregunta), MQTT es push (servidor empuja). Con miles de variables que cambian a 100 ms, REST colapsa. MQTT con Sparkplug B además da: estado de conexión por dispositivo (sé cuándo un gateway murió), birth/death messages, modelo de datos estandarizado, soporte multivendor.</p>
+    </section>
+
+    <!-- ============== 08 STACK ============== -->
+    <section id="stack">
+      <h3 class="section-title">08 — Stack tecnológico</h3>
+      <h4 class="section-h">Cada elección, con su <em>justificación</em> y la alternativa descartada.</h4>
+
+      <div class="stack-row">
+        <div class="stk-cat">Edge OS</div>
+        <div class="stk-body">
+          <strong>Revolution Pi · Siemens IOT2050 · Moxa UC-2100</strong>
+          <em>Producción · Linux industrial certificado</em>
+          <p>Hardware industrial con rieles DIN, alimentación 24VDC, temperatura extendida. Para prototipo y desarrollo se puede usar Raspberry Pi 5, pero <strong>no en planta real</strong> — el aire de fábrica mata electrónica de consumo en meses. <em>Descartado:</em> ESP32 por falta de capacidad para correr Node-RED + buffer local + OPC UA cliente.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Edge runtime</div>
+        <div class="stk-body">
+          <strong>Node-RED + Apache PLC4X</strong>
+          <em>Visual flows · multi-protocolo</em>
+          <p>Node-RED da una capa visual donde definir flujos de captura, transformación y publicación. PLC4X (Apache) provee drivers nativos en Java para S7, Modbus, EtherNet/IP, OPC UA. <em>Alternativa comercial:</em> Ignition Edge ($$, pero más estable y soportado). <em>Para piloto:</em> open-source.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Mensajería</div>
+        <div class="stk-body">
+          <strong>EMQX (broker MQTT) + Sparkplug B</strong>
+          <em>Pub/sub estándar IIoT</em>
+          <p>EMQX es open-source, escala horizontalmente, soporta clustering. <em>Descartados:</em> Mosquitto (solo single-node, OK para edge no para cloud), HiveMQ (excelente pero comercial), RabbitMQ (general-purpose, no nativo MQTT).</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Backend</div>
+        <div class="stk-body">
+          <strong>NestJS (Node.js + TypeScript)</strong>
+          <em>Modular · WebSocket nativo · ecosistema maduro</em>
+          <p>Arquitectura por módulos, providers, guards — mapea uno-a-uno con los módulos MES. Decoradores claros, validación con class-validator, OpenAPI auto-generado. Unifica lenguaje con el frontend (TypeScript end-to-end), tipos compartidos vía monorepo. <em>Descartado:</em> FastAPI/Python — excelente, pero parte el equipo en dos lenguajes; mejor reservarlo para microservicios ML (módulo F3).</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">DB telemetría</div>
+        <div class="stk-body">
+          <strong>TimescaleDB</strong>
+          <em>PostgreSQL + extensión time-series</em>
+          <p>SQL estándar, JOIN con tablas relacionales, hypertables auto-particionadas, compresión nativa (10-20×), agregaciones continuas, retention policies. <em>Descartado:</em> InfluxDB (su nuevo lenguaje Flux complica integraciones, v3 cambió de motor); Prometheus (pull-based, mal fit para IIoT); Firebase Realtime (cae rápido en costos y no escala).</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">DB configuración</div>
+        <div class="stk-body">
+          <strong>PostgreSQL (mismo motor)</strong>
+          <em>Mismo cluster, distintos esquemas</em>
+          <p>Reusar PostgreSQL para datos relacionales (usuarios, plantas, órdenes, auditoría). Un solo motor que mantener. <em>Descartado:</em> MongoDB — relaciones explícitas son la mayoría aquí, schema-on-write protege la integridad de configs críticas.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Cache / Realtime</div>
+        <div class="stk-body">
+          <strong>Redis</strong>
+          <em>Cache · pubsub interno · sesiones</em>
+          <p>Cache de últimos valores por variable (para que el frontend pinte instantáneo al abrir), pubsub para empujar deltas al WebSocket gateway, almacén de sesiones, rate limiting.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Frontend Web</div>
+        <div class="stk-body">
+          <strong>Next.js 14+ (App Router) + React + Tailwind</strong>
+          <em>SSR para SEO interno + CSR para reactivo</em>
+          <p>App Router permite layouts compartidos, server components para listas pesadas, client components para tiempo real. Tailwind para consistencia visual sin CSS suelto. <em>Visualización:</em> Recharts para gráficos estándar, Apache ECharts para casos complejos (gauges, gantt). <em>Estado:</em> Zustand para estado global, React Query para data fetching y cache.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Móvil / Tablet</div>
+        <div class="stk-body">
+          <strong>PWA primero · React Native después (F2)</strong>
+          <em>Instalable desde el navegador</em>
+          <p>Next.js como PWA cubre el 90% de necesidades de operadores en planta: instalación al home screen, offline cache, push notifications (con limitaciones en iOS). Si en F2 surgen necesidades nativas (cámara para escaneo continuo, NFC), se construye una shell React Native que envuelva las mismas vistas. <em>Descartado V1:</em> apps nativas separadas — multiplica esfuerzo sin valor inmediato.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Auth + RBAC</div>
+        <div class="stk-body">
+          <strong>Keycloak</strong>
+          <em>OAuth2/OIDC · SAML · SSO corporativo</em>
+          <p>Estándar de la industria. Roles, permisos, federación con Active Directory, MFA, recovery. <em>Descartado:</em> Auth0 (excelente pero $$ y vendor lock-in); auth casero (no es 2026 para escribir tu propio JWT auth en producción).</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Observabilidad</div>
+        <div class="stk-body">
+          <strong>OpenTelemetry → Grafana + Loki + Tempo</strong>
+          <em>Logs · metrics · traces</em>
+          <p>Estándar abierto, sin vendor lock-in. Grafana también sirve para dashboards técnicos internos (no para operadores). Loki para logs, Tempo para trazas distribuidas.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Despliegue</div>
+        <div class="stk-body">
+          <strong>Docker Compose (piloto) → Kubernetes (escala)</strong>
+          <em>Migración limpia cuando justifique</em>
+          <p>Compose mantiene la complejidad operativa baja para el piloto. Cuando haya &gt; 3 plantas o &gt; 20 servicios, migrar a K3s (Kubernetes ligero) o EKS/GKE. Cada servicio ya viene containerizado, la migración es de orquestador no de código.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">Cloud</div>
+        <div class="stk-body">
+          <strong>Agnóstico — recomendado AWS o GCP</strong>
+          <em>Self-hosted en VPS también viable</em>
+          <p>RDS (Postgres+Timescale como extensión) o Aurora; ECS/EKS para el backend; CloudFront/S3 para frontend estático. Para piloto chico, un servidor dedicado en Hetzner ($50/mes) corre todo. <em>Decisión:</em> empezar self-hosted, migrar a cloud cuando se justifique por SLAs.</p>
+        </div>
+      </div>
+
+      <div class="stack-row">
+        <div class="stk-cat">CI/CD</div>
+        <div class="stk-body">
+          <strong>GitHub Actions + Docker Registry</strong>
+          <em>Build · test · push · deploy</em>
+          <p>Branch protection, PR reviews, tests automatizados, scan de vulnerabilidades (Trivy), build de imágenes, deploy a staging automático y a producción con aprobación.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== 09 DATOS ============== -->
+    <section id="datos">
+      <h3 class="section-title">09 — Modelo de datos</h3>
+      <h4 class="section-h">Tres dominios separados: <em>telemetría · configuración · auditoría</em>.</h4>
+
+      <h6>Dominio 1 — Telemetría (TimescaleDB · hypertable)</h6>
+      <table class="tbl">
+        <tr><th>Tabla</th><th>Propósito</th><th>Cardinalidad</th></tr>
+        <tr><td><code>measurement</code></td><td>Valor + timestamp + variable_id + calidad + lote_id (FK suave)</td><td>Hypertable · millones/día</td></tr>
+        <tr><td><code>event</code></td><td>Eventos discretos: paro, arranque, cambio de turno, alarma</td><td>Hypertable · miles/día</td></tr>
+        <tr><td><code>aggregate_5min · 1hour · 1day</code></td><td>Agregados continuos pre-calculados</td><td>Vista materializada</td></tr>
+      </table>
+
+      <h6>Dominio 2 — Configuración y operación (PostgreSQL relacional)</h6>
+      <table class="tbl">
+        <tr><th>Tabla</th><th>Propósito</th></tr>
+        <tr><td><code>company · plant · area · line · equipment</code></td><td>Jerarquía organizacional ISA-95</td></tr>
+        <tr><td><code>variable</code></td><td>Definición de cada punto de telemetría (nombre, unidad, rango, mapeo PLC)</td></tr>
+        <tr><td><code>alarm_rule</code></td><td>Reglas de alerta (variable, operador, threshold, severidad, canal)</td></tr>
+        <tr><td><code>setpoint_command</code></td><td>Histórico de cambios de setpoints (quién, cuándo, qué, ack del PLC)</td></tr>
+        <tr><td><code>production_order</code></td><td>Orden de producción (producto, cantidad, línea asignada, estado)</td></tr>
+        <tr><td><code>batch</code></td><td>Lote producido (orden, inicio, fin, cantidad, calidad)</td></tr>
+        <tr><td><code>batch_genealogy</code></td><td>Tabla puente: lote consumió lote (forward/backward)</td></tr>
+        <tr><td><code>user · role · permission · role_assignment</code></td><td>RBAC clásico</td></tr>
+        <tr><td><code>shift · operator_assignment</code></td><td>Turnos y asignaciones de operador a línea</td></tr>
+        <tr><td><code>maintenance_plan · work_order</code></td><td>Mantenimientos preventivos y OT</td></tr>
+      </table>
+
+      <h6>Dominio 3 — Auditoría (PostgreSQL · append-only)</h6>
+      <table class="tbl">
+        <tr><th>Tabla</th><th>Propósito</th></tr>
+        <tr><td><code>audit_log</code></td><td>Quien, cuando, qué entidad, acción, valor anterior, valor nuevo, IP, user-agent, hash encadenado al registro anterior</td></tr>
+      </table>
+
+      <div class="callout">
+        <span class="tag">Decisión clave — partición</span>
+        <p>La tabla <code>measurement</code> se particiona por tiempo (chunks de 1 día) y por <code>plant_id</code>. Esto permite borrar datos antiguos en O(1) y consultar solo la planta relevante. Compresión activada después de 7 días reduce footprint ~15×. Retención de detalle: 90 días. Retención de agregados horarios: 5 años.</p>
+      </div>
+    </section>
+
+    <!-- ============== 10 APIs ============== -->
+    <section id="apis">
+      <h3 class="section-title">10 — APIs y mensajería</h3>
+      <h4 class="section-h">Tres canales según el patrón: <em>REST · WebSocket · MQTT</em>.</h4>
+
+      <h6>REST · operaciones CRUD y consultas históricas</h6>
+      <p>Prefijo <code>/api/v1</code>. Todos los endpoints autenticados con Bearer JWT emitido por Keycloak. OpenAPI 3.1 auto-generado.</p>
+      <table class="tbl">
+        <tr><th>Endpoint</th><th>Propósito</th></tr>
+        <tr><td><code>GET /lines</code></td><td>Listar líneas accesibles para el usuario actual</td></tr>
+        <tr><td><code>GET /lines/{id}/variables</code></td><td>Variables expuestas en una línea</td></tr>
+        <tr><td><code>GET /variables/{id}/history?from&amp;to&amp;step</code></td><td>Serie histórica con downsampling automático</td></tr>
+        <tr><td><code>POST /variables/{id}/setpoint</code></td><td>Solicitar escritura de setpoint (devuelve command_id)</td></tr>
+        <tr><td><code>GET /commands/{id}</code></td><td>Estado del comando (pending · sent · acked · failed)</td></tr>
+        <tr><td><code>GET /alerts?status&amp;severity&amp;line</code></td><td>Lista paginada de alertas</td></tr>
+        <tr><td><code>POST /alerts/{id}/ack</code></td><td>Acknowledge de una alerta</td></tr>
+        <tr><td><code>GET /batches/{id}/genealogy</code></td><td>Árbol de genealogía (forward + backward)</td></tr>
+        <tr><td><code>GET /oee?line&amp;from&amp;to</code></td><td>OEE calculado por ventana</td></tr>
+        <tr><td><code>POST /reports/export</code></td><td>Generar reporte asíncrono (devuelve job_id)</td></tr>
+      </table>
+
+      <h6>WebSocket · streaming de actualizaciones a la UI</h6>
+      <p>Endpoint <code>wss://api/ws</code>. Tras conexión + auth, el cliente se suscribe a topics:</p>
+      <ul>
+        <li><code>sub line.{lineId}.live</code> — todos los valores en vivo de una línea (throttled a 1Hz)</li>
+        <li><code>sub variable.{id}.live</code> — un solo punto (sin throttle)</li>
+        <li><code>sub alerts.line.{id}</code> — alertas nuevas/actualizadas en una línea</li>
+        <li><code>sub plant.{id}.status</code> — estado general (equipos online/offline, OEE en curso)</li>
+      </ul>
+
+      <h6>MQTT · bus interno edge ↔ cloud (no expuesto al frontend)</h6>
+      <p>Topics jerárquicos con Sparkplug B. <code>spBv1.0/{group_id}/{message_type}/{edge_node_id}/{device_id}</code>.</p>
+      <ul>
+        <li><code>NBIRTH/NDEATH</code> — gateway anuncia su nacimiento/muerte con todo su catálogo de variables.</li>
+        <li><code>DBIRTH/DDEATH</code> — un dispositivo bajo el gateway (un PLC) entra o sale.</li>
+        <li><code>NDATA/DDATA</code> — datos de telemetría (solo deltas, no valores que no cambiaron).</li>
+        <li><code>NCMD/DCMD</code> — comandos hacia el gateway (escribir setpoint, recargar config).</li>
+      </ul>
+
+      <p>Esta separación es importante: el frontend nunca habla MQTT, el backend nunca habla con PLCs. Cada capa tiene su protocolo y su seguridad.</p>
+    </section>
+
+    <!-- ============== 11 SEGURIDAD ============== -->
+    <section id="seguridad">
+      <h3 class="section-title">11 — Seguridad</h3>
+      <h4 class="section-h">La frontera más crítica está entre <em>OT y IT</em>.</h4>
+
+      <h6>Segmentación de red</h6>
+      <ul>
+        <li>Red <strong>OT</strong> (PLCs, sensores) en VLAN aislada sin acceso a internet.</li>
+        <li>Red <strong>DMZ</strong> donde vive el gateway. Único punto de contacto entre OT e IT.</li>
+        <li>Red <strong>IT</strong> con servidor fog (si aplica) y conexión WAN al cloud.</li>
+        <li>Firewall entre cada nivel. Solo tráfico necesario, en una sola dirección donde sea posible.</li>
+      </ul>
+
+      <h6>Identidad y acceso</h6>
+      <ul>
+        <li>Todo usuario en Keycloak con MFA obligatorio para roles privilegiados.</li>
+        <li>RBAC por línea: un supervisor de Línea 3 solo ve y opera Línea 3.</li>
+        <li>4-eyes (doble aprobación) para escritura de setpoints en variables marcadas como críticas.</li>
+        <li>Tokens JWT de corta vida (15 min) + refresh tokens rotantes.</li>
+      </ul>
+
+      <h6>Cifrado</h6>
+      <ul>
+        <li>TLS 1.3 en todas las conexiones de red (frontend↔backend, gateway↔broker, broker↔backend).</li>
+        <li>MQTT sobre TLS (puerto 8883), no MQTT plano.</li>
+        <li>OPC UA con Security Policy <code>Basic256Sha256</code> y autenticación por certificado.</li>
+        <li>AES-256 en reposo a nivel de filesystem y de DB (TDE).</li>
+        <li>Secretos en Vault o AWS Secrets Manager — nunca en código ni en variables de entorno commiteadas.</li>
+      </ul>
+
+      <h6>Auditoría inmutable</h6>
+      <ul>
+        <li>Toda escritura crítica (setpoint, config, usuarios, permisos) se registra en <code>audit_log</code>.</li>
+        <li>Cada registro tiene <code>hash = SHA256(prev_hash + record)</code> — alteración detectable.</li>
+        <li>Backups del audit log en bucket WORM (write-once-read-many).</li>
+      </ul>
+
+      <h6>Estándares de referencia</h6>
+      <p>El sistema se diseña <em>orientado a</em> <strong>IEC 62443</strong> (ciberseguridad industrial), <strong>OWASP ASVS Level 2</strong> (aplicación web), <strong>NIST 800-82</strong> (sistemas de control industrial). La certificación formal queda fuera del piloto pero las prácticas se siguen desde el día uno para que sea posible certificar después.</p>
+    </section>
+
+    <!-- ============== 12 SIMULACIÓN ============== -->
+    <section id="simulacion">
+      <h3 class="section-title">12 — Plan de simulación</h3>
+      <h4 class="section-h">Cómo probar el sistema completo <em>sin un PLC físico</em>.</h4>
+
+      <p>El MVP se puede desarrollar y probar completamente con simuladores. Esto permite que mientras se consigue/configura el hardware industrial, el equipo de software avance sin bloqueos.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <span class="tag">Opción A · Open source</span>
+          <h6>OpenPLC + ModbusPal + Node-RED</h6>
+          <p><strong>OpenPLC</strong> simula un PLC real con lógica ladder. <strong>ModbusPal</strong> genera variables sintéticas con curvas realistas (sinusoidales, rampas, ruido). <strong>Node-RED</strong> los lee y publica a MQTT como si fuera el edge real. Costo: cero. Setup: 1 día.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Opción B · Realismo industrial</span>
+          <h6>Factory I/O + simulador OPC UA</h6>
+          <p><strong>Factory I/O</strong> es un simulador 3D de líneas de producción (bandas transportadoras, brazos robóticos, sensores ópticos) que se conecta a OpenPLC o a Siemens TIA. Más visual para presentar a stakeholders. Costo: licencia ~$200 una vez.</p>
+        </div>
+        <div class="card">
+          <span class="tag">Opción C · Hardware mínimo</span>
+          <h6>Siemens S7-1200 o LOGO! 8</h6>
+          <p>Un PLC físico de gama baja (~$300-500 USD) conectado a un par de sensores reales (termopar, fotocelda, encoder). Permite validar el conector OPC UA real y la latencia real. Recomendado para fase 1 del roadmap.</p>
+        </div>
+        <div class="card card-strong">
+          <span class="tag">Recomendación piloto</span>
+          <h6>Empezar con A, escalar a C</h6>
+          <p>Semana 1-3: OpenPLC + ModbusPal mientras se construye el backend y frontend. Semana 4+: S7-1200 real para validar protocolo real, latencia real, comportamiento offline. Factory I/O opcional si hay presupuesto y se quiere demo visual.</p>
+        </div>
+      </div>
+
+      <h6>Generador de carga sintética</h6>
+      <p>Para pruebas de escalabilidad, se construye un microservicio <code>load-generator</code> que publica mensajes Sparkplug B simulando N gateways con M variables cada uno a frecuencia F. Permite validar que el backend aguanta 50 líneas × 100 variables × 1Hz = 5,000 msg/s antes de tener planta real.</p>
+    </section>
+
+    <!-- ============== 13 ROADMAP ============== -->
+    <section id="roadmap">
+      <h3 class="section-title">13 — Roadmap por fases</h3>
+      <h4 class="section-h">Cuatro fases, cada una con criterio de salida <em>medible</em>.</h4>
+
+      <div class="phases">
+        <div class="phase">
+          <div class="ph-num">FASE 0</div>
+          <div class="ph-name">Cimientos en simulación</div>
+          <div class="ph-dur">Semanas 1-4</div>
+          <ul>
+            <li>Setup repo monorepo</li>
+            <li>Backend NestJS skeleton</li>
+            <li>TimescaleDB + Postgres</li>
+            <li>Broker MQTT local</li>
+            <li>OpenPLC simulando 10 variables</li>
+            <li>Dashboard básico web</li>
+            <li>Auth con Keycloak</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="ph-num">FASE 1</div>
+          <div class="ph-name">Una línea real, módulos MVP</div>
+          <div class="ph-dur">Semanas 5-12</div>
+          <ul>
+            <li>PLC físico S7-1200</li>
+            <li>Gateway industrial deploy</li>
+            <li>M-01 al M-07 completos</li>
+            <li>Vista móvil (PWA)</li>
+            <li>72h sin red validado</li>
+            <li>Carga sintética 10× capacidad</li>
+            <li>Documentación operativa</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="ph-num">FASE 2</div>
+          <div class="ph-name">Línea completa + módulos avanzados</div>
+          <div class="ph-dur">Mes 4-7</div>
+          <ul>
+            <li>Multi-PLC en una línea</li>
+            <li>M-08 órdenes de producción</li>
+            <li>M-09 mantenimiento preventivo</li>
+            <li>M-10 SPC</li>
+            <li>M-11 genealogía visual</li>
+            <li>Integración ERP (lectura)</li>
+            <li>Multi-tenancy plantas</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="ph-num">FASE 3</div>
+          <div class="ph-name">Planta completa + ML</div>
+          <div class="ph-dur">Mes 8-12</div>
+          <ul>
+            <li>3+ líneas en producción</li>
+            <li>M-12 mantenimiento predictivo</li>
+            <li>M-13 energy monitoring</li>
+            <li>M-14 ERP bidireccional</li>
+            <li>M-15 digital twin</li>
+            <li>Migración a Kubernetes</li>
+            <li>Certificación interna seguridad</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== 14 HARDWARE ============== -->
+    <section id="hardware">
+      <h3 class="section-title">14 — Hardware y costos</h3>
+      <h4 class="section-h">Cuánto cuesta cada fase, en <em>orden de magnitud</em>.</h4>
+
+      <p>Costos estimados en USD. Excluyen mano de obra. Incluyen 20% de buffer.</p>
+
+      <table class="tbl">
+        <tr><th>Concepto</th><th>Fase 0-1 (Piloto)</th><th>Fase 2</th><th>Fase 3 (Planta)</th></tr>
+        <tr><td>Gateway industrial (por línea)</td><td>$500 (Rev Pi)</td><td>$800 (IOT2050)</td><td>$800 × N líneas</td></tr>
+        <tr><td>PLC de pruebas / extender</td><td>$400 (S7-1200)</td><td>—</td><td>—</td></tr>
+        <tr><td>Sensores adicionales</td><td>$200</td><td>$500</td><td>según diseño</td></tr>
+        <tr><td>Servidor fog en planta</td><td>—</td><td>$1,500</td><td>$3,000 (HA)</td></tr>
+        <tr><td>Cloud / VPS (mensual)</td><td>$80/mes (Hetzner)</td><td>$300/mes</td><td>$1,200/mes (AWS)</td></tr>
+        <tr><td>Licencia OPC UA comercial (opcional)</td><td>—</td><td>$2,000 (Ignition Edge)</td><td>$5,000+</td></tr>
+        <tr><td>Certificados SSL / dominio</td><td>$50</td><td>$100</td><td>$300</td></tr>
+        <tr><td><strong>Total CAPEX</strong></td><td><strong>~$1,150</strong></td><td><strong>~$4,900</strong></td><td><strong>variable</strong></td></tr>
+        <tr><td><strong>Total OPEX mensual</strong></td><td><strong>~$80</strong></td><td><strong>~$300</strong></td><td><strong>~$1,200+</strong></td></tr>
+      </table>
+
+      <p>El piloto completo se puede levantar por debajo de <strong>$1,500 USD</strong> de hardware + un VPS de $80/mes. Esto es órdenes de magnitud por debajo de licenciar Ignition o Wonderware ($15,000+ solo de entrada).</p>
+    </section>
+
+    <!-- ============== 15 RIESGOS ============== -->
+    <section id="riesgos">
+      <h3 class="section-title">15 — Riesgos técnicos y mitigaciones</h3>
+      <h4 class="section-h">Lo que <em>puede salir mal</em> y cómo lo prevenimos.</h4>
+
+      <table class="tbl">
+        <tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr>
+        <tr><td>PLC no expone OPC UA (modelo viejo)</td><td>Alto</td><td>Usar Apache PLC4X con driver nativo S7/Modbus; gateway hace la traducción a OPC UA o publica directo a MQTT</td></tr>
+        <tr><td>Latencia variable de la red WAN</td><td>Medio</td><td>Fog en planta absorbe ráfagas; QoS 1 en MQTT con cola persistente; UI muestra "last update" para honestidad</td></tr>
+        <tr><td>Crecimiento descontrolado de DB</td><td>Alto</td><td>Compresión Timescale + retention policies + agregados continuos; alertas por uso de disco al 70%</td></tr>
+        <tr><td>Escritura de setpoint maliciosa o errónea</td><td>Crítico</td><td>RBAC granular + rangos de validación + 4-eyes en variables críticas + audit log</td></tr>
+        <tr><td>Gateway físicamente desconectado</td><td>Alto</td><td>Birth/Death messages detectan en &lt; 30s; alerta automática a mantenimiento</td></tr>
+        <tr><td>Operador no confía en datos / vuelve a papel</td><td>Crítico (negocio)</td><td>UI mobile-first, capacitación, mostrar latencia real, indicar fuente de cada dato, paridad con HMI del PLC</td></tr>
+        <tr><td>Vendor lock-in con un fabricante de PLC</td><td>Medio</td><td>Capa de abstracción OPC UA; pruebas en CI contra simuladores de S7 y de Modbus</td></tr>
+        <tr><td>Dependencia de internet para operar</td><td>Crítico</td><td>Fog en planta + buffer edge 72h; UI degradada local que sigue mostrando lo último conocido</td></tr>
+        <tr><td>Ciberataque (ransomware, lateral movement)</td><td>Crítico</td><td>Segmentación OT/IT, firewalls, MFA, monitoreo de tráfico anómalo, backups offline</td></tr>
+        <tr><td>Crecimiento del equipo desbalanceado (informática vs mecatrónica)</td><td>Medio</td><td>OPC UA como contrato claro entre los dos mundos; integración solo por ese punto; tests automáticos del contrato</td></tr>
+      </table>
+    </section>
+
+    <!-- ============== 16 ACEPTACIÓN ============== -->
+    <section id="aceptacion">
+      <h3 class="section-title">16 — Criterios de aceptación del piloto</h3>
+      <h4 class="section-h">Cómo sabemos que el piloto <em>funcionó</em>.</h4>
+
+      <p>El piloto se considera aceptado cuando todas las siguientes condiciones se cumplen y se demuestran ante el comité técnico:</p>
+
+      <ol>
+        <li><strong>Conectividad real:</strong> sistema lee al menos un PLC físico (S7-1200) y un PLC simulado simultáneamente, con al menos 20 variables por dispositivo.</li>
+        <li><strong>Latencia:</strong> p95 de sensor a UI &lt; 2s en condiciones normales, medido durante 24h continuas.</li>
+        <li><strong>Resiliencia offline:</strong> con la red WAN apagada por 72h, ningún dato se pierde; al restaurar, todo aparece en cloud en &lt; 30 min.</li>
+        <li><strong>Escritura de setpoint:</strong> setpoint cambiado desde la app móvil llega al PLC en &lt; 5s con confirmación; auditoría correcta.</li>
+        <li><strong>Carga:</strong> sistema procesa 5,000 mensajes/segundo durante 1h sin errores, con generador sintético.</li>
+        <li><strong>Vista móvil:</strong> dashboards principales operables desde un tablet en piso, con guantes, a luz industrial; instalación PWA exitosa.</li>
+        <li><strong>RBAC:</strong> usuario con rol limitado a una línea no puede ver datos de otra (verificado por intento explícito).</li>
+        <li><strong>Trazabilidad:</strong> dado un lote final, sistema produce reporte PDF con genealogía completa, parámetros usados, operador, eventos.</li>
+        <li><strong>OEE en vivo:</strong> KPIs actualizados al cierre de cada turno, comparables manualmente con cálculos de planta.</li>
+        <li><strong>Seguridad:</strong> escaneo OWASP ZAP sin vulnerabilidades críticas; auditoría Trivy sin CVE críticos en imágenes; pen-test interno superado.</li>
+        <li><strong>Documentación:</strong> manual de operador, manual de admin, runbook de incidentes, diagramas de arquitectura, modelo de datos, todos versionados en repo.</li>
+        <li><strong>Aceptación de operadores:</strong> 80% de operadores de la línea piloto reportan en encuesta que prefieren el sistema al método actual.</li>
+      </ol>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <strong>FIN DEL DOCUMENTO</strong>
+  Prontuario técnico DOC.MES.001 · v1.0 · Mayo 2026 · Documento interno · Sistema piloto MES + IIoT
+</footer>
+
+</body>
+</html>
